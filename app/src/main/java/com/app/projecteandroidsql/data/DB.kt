@@ -11,43 +11,44 @@ class DB(context: Context) : SQLiteOpenHelper(context, Constants.DATABASE_NAME, 
 val taulaLlibres = """
         CREATE TABLE ${Constants.TABLE_NAME_LLIBRES} (
         
-            ${Constants.COLUMN_TITOL}INTEGER PRIMARY KEY AUTOINCREMENT,
+            ${Constants.COLUMN_LLIBRE_ID}INTEGER PRIMARY KEY AUTOINCREMENT,
+            ${Constants.COLUMN_TITOL} TEXT NOT NULL,
             ${Constants.COLUMN_AUTOR} TEXT NOT NULL,
-            ${Constants.COLUMN_DATA_PUBLICACIO} INTEGER NOT NULL,
-            ${Constants.COLUMN_EDITORIAL} TEXT NOT NULL,
-            ${Constants.COLUMN_NUM_PAGINES} FLOAT NOT NULL
-            ${Constants.COLUMN_ESTAT_LLIBRE} FLOAT NOT NULL
-            ${Constants.COLUMN_SINOPSIS} FLOAT NOT NULL
-            ${Constants.COLUMN_PORTADA} FLOAT NOT NULL
+            ${Constants.COLUMN_DATA_PUBLICACIO} TEXT NOT NULL,
+            ${Constants.COLUMN_NUM_PAGINES} TEXT NOT NULL,
+            ${Constants.COLUMN_ESTAT_LLIBRE} TEXT NOT NULL,
+            ${Constants.COLUMN_SINOPSIS} TEXT NOT NULL,
+            ${Constants.COLUMN_PORTADA} TEXT NOT NULL
         )
     """
 db?.execSQL(taulaLlibres)
 
 val taulaUsuaris = """
         CREATE TABLE ${Constants.TABLE_NAME_USUARIS} (
-            ${Constants.COLUMN_USERNAME} INTEGER PRIMARY KEY AUTOINCREMENT,
-            ${Constants.COLUMN_CONTRASENYA} TEXT NOT NULL,
-            ${Constants.COLUMN_CORREU} INTEGER NOT NULL,
+            ${Constants.COLUMN_USUARI_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
+            ${Constants.COLUMN_USERNAME} TEXT NOT NULL,
+            ${Constants.COLUMN_PASSWORD} TEXT NOT NULL,
+            ${Constants.COLUMN_EMAIL} TEXT NOT NULL
         )
     """
 db?.execSQL(taulaUsuaris)
 
 val taulaBiblioteca = """
         CREATE TABLE ${Constants.TABLE_NAME_BIBLIOTECA} (
-            // IMPORTANT ${Constants.COLUMN_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
+            // IMPORTANT ${Constants.CONTRUCTOR_LLIBRE} 
         )
     """
 db?.execSQL(taulaBiblioteca)
 
 val taulaAutor = """
         CREATE TABLE ${Constants.TABLE_NAME_AUTOR} (
-            ${Constants.COLUMN_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
-            ${Constants.COLUMN_NOM} INTEGER NOT NULL,
+            ${Constants.COLUMN_AUTOR_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
+            ${Constants.COLUMN_NOM} TEXT NOT NULL,
             ${Constants.COLUMN_COGNOM} TEXT NOT NULL,
-            ${Constants.COLUMN_DATA_NAIXEMENT} FLOAT NOT NULL
+            ${Constants.COLUMN_DATA_NAIXEMENT} INTEGER NOT NULL
         )
     """
-db?.execSQL(createTable)
+db?.execSQL(taulaAutor)
 }
 
 override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
