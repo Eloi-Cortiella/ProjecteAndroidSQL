@@ -35,7 +35,7 @@ db?.execSQL(taulaUsuaris)
 
 val taulaBiblioteca = """
         CREATE TABLE ${Constants.TABLE_NAME_BIBLIOTECA} (
-            // IMPORTANT ${Constants.CONTRUCTOR_LLIBRE} 
+            // IMPORTANT ${Constants.CLASSE_LLIBRE} 
         )
     """
 db?.execSQL(taulaBiblioteca)

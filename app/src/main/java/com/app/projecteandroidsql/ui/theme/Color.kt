@@ -2,10 +2,9 @@ package com.app.projecteandroidsql.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val Brown = Color(0xFF4D433D) // background
+val LightGrey = Color(0xFF525C5A) //surfaceVariant
+val GreenBlue = Color(0xFF56877D) // primary
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val PistachoGreen = Color(0xFF8CCC81) // secondary
+val LighGreen = Color(0xFFBADE57) // tertiary
