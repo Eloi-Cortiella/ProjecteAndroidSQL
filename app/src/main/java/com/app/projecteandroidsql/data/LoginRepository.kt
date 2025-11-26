@@ -1,6 +1,6 @@
 package com.app.projecteandroidsql.data
 
-import com.app.projecteandroidsql.data.model.LoggedInUser
+import com.app.projecteandroidsql.data.login.LoggedInUser
 
 /**
  * Class that requests authentication and user information from the remote data source and
