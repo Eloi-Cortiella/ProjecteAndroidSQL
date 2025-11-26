@@ -1,4 +1,4 @@
-package com.app.projecteandroidsql.data.model
+package com.app.projecteandroidsql.data.login
 
 /**
  * Data class that captures user information for logged in users retrieved from LoginRepository

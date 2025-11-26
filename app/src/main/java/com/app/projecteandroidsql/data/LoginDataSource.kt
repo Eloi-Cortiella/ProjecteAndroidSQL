@@ -1,6 +1,6 @@
 package com.app.projecteandroidsql.data
 
-import com.app.projecteandroidsql.data.model.LoggedInUser
+import com.app.projecteandroidsql.data.login.LoggedInUser
 import java.io.IOException
 
 /**
