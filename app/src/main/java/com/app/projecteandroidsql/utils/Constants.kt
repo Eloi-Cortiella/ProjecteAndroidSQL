@@ -32,7 +32,8 @@ object Constants {
     //Columnes taula biblioteca
     const val TABLE_NAME_BIBLIOTECA = "Biblioteca"
     //Importem la classe Llibres per poder-la utilitzar en la taula Biblioteca
-    val CONTRUCTOR_LLIBRE = arrayOf(Llibres::class)
+
+    val CLASSE_LLIBRE = Llibres::class
 
     //Columnes taula autor
     const val TABLE_NAME_AUTOR = "Autor"
