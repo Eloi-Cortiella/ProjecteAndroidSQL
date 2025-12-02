@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import com.app.projecteandroidsql.ui.login.LoginScreen
 import com.app.projecteandroidsql.ui.theme.ProjecteAndroidSQLTheme
 
 class MainActivity : ComponentActivity() {
@@ -32,7 +33,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ProjecteAndroidSQLTheme {
-                ProjecteAndroidSQLApp()
+                LoginScreen()
             }
         }
     }
