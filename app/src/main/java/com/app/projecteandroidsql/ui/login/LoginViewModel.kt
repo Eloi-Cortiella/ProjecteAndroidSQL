@@ -7,5 +7,6 @@ import android.util.Patterns
 
 import com.app.projecteandroidsql.R
 
-class LoginViewModel() {
+class LoginViewModel : ViewModel() {
+
 }
