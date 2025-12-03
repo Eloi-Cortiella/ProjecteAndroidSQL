@@ -4,6 +4,9 @@ import com.app.projecteandroidsql.model.Llibres
 
 
 //Les constants serveixen per definir les columnes de les taules SQL, no les dades
+/**
+ * Classe object per definir les constants de la base de dades
+ */
 object Constants {
     const val DATABASE_NAME = "BiblioDAMDB"
     const val DATABASE_VERSION = 1
@@ -32,8 +35,7 @@ object Constants {
     //Columnes taula biblioteca
     const val TABLE_NAME_BIBLIOTECA = "Biblioteca"
     //Importem la classe Llibres per poder-la utilitzar en la taula Biblioteca
-
-    val CLASSE_LLIBRE = Llibres::class
+    val LLISTA_LLIBRES = Llibres::class
 
     //Columnes taula autor
     const val TABLE_NAME_AUTOR = "Autor"
