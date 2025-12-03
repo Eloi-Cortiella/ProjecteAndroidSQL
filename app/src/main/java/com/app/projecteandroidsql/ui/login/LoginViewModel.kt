@@ -1,12 +1,14 @@
 package com.app.projecteandroidsql.ui.login
 
+import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import android.util.Patterns
-import com.app.projecteandroidsql.ProjecteAndroidSQLApp
+import androidx.compose.runtime.Composable
+import androidx.core.content.ContextCompat.startActivity
+import com.app.projecteandroidsql.MainActivity
 
-import com.app.projecteandroidsql.R
 import kotlinx.coroutines.delay
 
 class LoginViewModel : ViewModel() {
@@ -36,8 +38,10 @@ class LoginViewModel : ViewModel() {
         _isLoading.value = true
         delay(4000)
         _isLoading.value = false
-        // Canviar pantalla principal
-        // ProjecteAndroidSQLApp()
     }
 
+//    private fun navigateToMainApp() {
+//        // Implementation of navigation to the main application
+//        startActivity(new Intent(this, MainActivity.class));
+//    }
 }
