@@ -33,6 +33,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ProjecteAndroidSQLTheme {
+                //Executa la classe LoginScreen.kt
                 LoginScreen()
             }
         }
