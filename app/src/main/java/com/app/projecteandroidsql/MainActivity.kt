@@ -27,24 +27,18 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.app.projecteandroidsql.ui.login.LoginScreen
 import com.app.projecteandroidsql.ui.theme.ProjecteAndroidSQLTheme
 
-/**
- * Classe principal de l'aplicació
- */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             ProjecteAndroidSQLTheme {
-                ProjecteAndroidSQLApp()
+                LoginScreen()
             }
         }
     }
 }
 
-/**
- * Classe per a la vista principal de l'aplicació afegida amb jetpack compose
- */
 @PreviewScreenSizes
 @Composable
 fun ProjecteAndroidSQLApp() {
