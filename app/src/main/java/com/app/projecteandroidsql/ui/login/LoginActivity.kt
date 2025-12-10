@@ -19,27 +19,66 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import com.app.projecteandroidsql.MainActivity
+import com.app.projecteandroidsql.ui.theme.ProjecteAndroidSQLTheme
 
-@Composable
-fun LoginScreen(viewModel: LoginViewModel) {
-    Box(
-        Modifier
-            .fillMaxSize()
-            .padding(16.dp)) {
-        Login(Modifier.align(Alignment.Center), viewModel)
+class LoginActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            ProjecteAndroidSQLTheme {
+                // Pots usar el mateix patró que ja feies:
+                LoginScreen(
+                    viewModel = LoginViewModel(),
+                    onLoginSuccess = {
+                        // Quan el login és correcte → anem a la pantalla principal
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finish() // Tanquem la pantalla de login
+                    }
+                )
+            }
+        }
     }
 }
 
 @Composable
-fun Login(modifier: Modifier, viewModel: LoginViewModel) {
+fun LoginScreen(
+    viewModel: LoginViewModel,
+    onLoginSuccess: () -> Unit
+) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Login(
+            modifier = Modifier.align(Alignment.Center),
+            viewModel = viewModel,
+            onLoginSuccess = onLoginSuccess
+        )
+    }
+}
 
-    val email:String by viewModel.email.observeAsState("")
-    val password:String by viewModel.password.observeAsState("")
-    val loginEnable:Boolean by viewModel.loginEnable.observeAsState(false)
-    val isLoading:Boolean by viewModel.isLoading.observeAsState(false)
+
+@Composable
+fun Login(
+    modifier: Modifier,
+    viewModel: LoginViewModel,
+    onLoginSuccess: () -> Unit
+) {
+    val email: String by viewModel.email.observeAsState("")
+    val password: String by viewModel.password.observeAsState("")
+    val loginEnable: Boolean by viewModel.loginEnable.observeAsState(false)
+    val isLoading: Boolean by viewModel.isLoading.observeAsState(false)
     val coroutineScope = rememberCoroutineScope()
 
-    // Moment de carrega si s'ha iniciat la funcio de login
     if (isLoading) {
         Box(
             modifier = Modifier
@@ -50,25 +89,30 @@ fun Login(modifier: Modifier, viewModel: LoginViewModel) {
             CircularProgressIndicator()
         }
         return
-    }
-    else {
+    } else {
         Column(modifier = modifier) {
             HeaderImatge()
             Spacer(modifier = Modifier.padding(16.dp))
-            EmailField(email) {viewModel.onLoginChanged(it, password)}
+            EmailField(email) { viewModel.onLoginChanged(it, password) }
             Spacer(modifier = Modifier.padding(4.dp))
-            PasswordField(password) {viewModel.onLoginChanged(email, it)}
+            PasswordField(password) { viewModel.onLoginChanged(email, it) }
             Spacer(modifier = Modifier.padding(8.dp))
             ForgotPassword(Modifier.align(Alignment.Start))
             Spacer(modifier = Modifier.padding(16.dp))
             LoginButton(loginEnable) {
                 coroutineScope.launch {
-                    viewModel.onLoginSelected()
+                    // SUPOSANT que onLoginSelected() retorna Boolean
+                    val success = viewModel.onLoginSelected()
+                    if (success) {
+                        onLoginSuccess()
+                    }
+                    // Si no retorna res, hauràs de fer que el ViewModel expose un LiveData d’èxit
                 }
             }
         }
     }
 }
+
 
 
 

@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ProjecteAndroidSQLTheme {
-                LoginScreen(LoginViewModel())
+                ProjecteAndroidSQLApp() // ací ja va la vista “main”
             }
         }
     }
