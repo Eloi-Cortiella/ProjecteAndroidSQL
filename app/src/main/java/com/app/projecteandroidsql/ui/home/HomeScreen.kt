@@ -25,11 +25,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.Alignment
+
 
 import com.app.projecteandroidsql.ui.home.HomeViewModel
 
 @Composable
-fun afegirLlibre() {
+fun HomeScreen(viewModel: HomeViewModel = remember { HomeViewModel() }) {
+    var mostrarDialogo by rememberSaveable { mutableStateOf(false) }
+
+    if (mostrarDialogo) {
+        afegirLlibre(viewModel) { mostrarDialogo = false }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Button(onClick = { mostrarDialogo = true }) {
+                Text("Afegeix Llibre")
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun afegirLlibre(viewModel: HomeViewModel, onDismiss: () -> Unit) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var title by rememberSaveable { mutableStateOf(TextFieldValue("")) }
@@ -46,7 +71,6 @@ fun afegirLlibre() {
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // INPUT DE TÍTOL
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
@@ -55,26 +79,18 @@ fun afegirLlibre() {
                 singleLine = true
             )
 
-            // BOTÓ AFEGIR LLIBRE
             Button(
                 onClick = {
                     val raw = title.text
-                    if (!HomeViewModel.validarTitol(raw)) {
+                    if (!viewModel.validarTitol(raw)) {
                         scope.launch {
                             snackbarHostState.showSnackbar("El títol ha de tenir almenys 3 caràcters.")
                         }
                         return@Button
                     }
 
-                    val formatted = HomeViewModel.formatTitol(raw)
-
-                    tasks.add(
-                        TodoItem(
-                            title = formatted,
-                        )
-                    )
-
-                    // Neteja i feedback
+                    val formatted = viewModel.formatTitol(raw)
+                    tasks.add(TodoItem(title = formatted))
                     title = TextFieldValue("")
 
                     scope.launch {
@@ -88,4 +104,5 @@ fun afegirLlibre() {
         }
     }
 }
+
 data class TodoItem(val title: String)
