@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
@@ -18,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import com.app.projecteandroidsql.ui.home.HomeScreen
 import com.app.projecteandroidsql.ui.theme.ProjecteAndroidSQLTheme
 
 class MainActivity : ComponentActivity() {
@@ -56,6 +58,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         )
+        HomeScreen();
     }
 
     enum class AppDestinations(
