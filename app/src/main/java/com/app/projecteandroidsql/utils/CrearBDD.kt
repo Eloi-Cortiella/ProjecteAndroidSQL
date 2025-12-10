@@ -12,13 +12,17 @@ import com.app.projecteandroidsql.data.DB
 class CrearBDD : ComponentActivity() {
     var db: DB? = null
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        // Inicialitzem la base de dades. Millor dit, del package data, importem la classe DB amb les seves propietats
-        this.db = DB(this)
-        Log.d(tag, "Base de dades inicialitzada")
+        try {
+            super.onCreate(savedInstanceState)
+            // Inicialitzem la base de dades. Millor dit, del package data, importem la classe DB amb les seves propietats
+            this.db = DB(this)
+            Log.d(tag, "Base de dades inicialitzada")
 
-        // Load and display movies in Logcat
-        carregarTaules()
+            // Load and display movies in Logcat
+            carregarTaules()
+        } catch (e: Exception) {
+            print("Error al importar la configuració de data/DB")
+        }
     }
 
     private fun carregarTaules() {
@@ -52,7 +56,7 @@ class CrearBDD : ComponentActivity() {
                 }
             }
         } catch (e: Exception) {
-            TODO("Not yet implemented")
+            print("Hi ha algun error al carregar la taula auto")
         }
 
         //Carreguem la taula llibres
@@ -87,10 +91,11 @@ class CrearBDD : ComponentActivity() {
                 }
             }
         } catch (e: Exception) {
-            TODO("Not yet implemented")
+            print("Hi ha hagut algun error al intentar importar la taula llibres")
         }
 
-        try {//Carreguem la taula usuaris
+        //Carreguem la taula usuaris
+        try {
             this.db!!.getReadableDatabase().query(
                 Constants.TABLE_NAME_USUARIS,
                 null,
@@ -116,7 +121,7 @@ class CrearBDD : ComponentActivity() {
                 }
             }
         } catch (e: Exception) {
-            TODO("Not yet implemented")
+            print("Hi ha hagut algun error al intentar importar la taula usuaris")
         }
 
 
