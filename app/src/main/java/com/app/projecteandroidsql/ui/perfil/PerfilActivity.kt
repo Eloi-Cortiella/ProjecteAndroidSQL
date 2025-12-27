@@ -103,6 +103,7 @@ fun PerfilScreen(viewModel: PerfilViewModel = viewModel()) {
     val activity = LocalContext.current as? Activity
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text("Perfil") },
