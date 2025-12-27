@@ -17,4 +17,7 @@ interface UsuariDao {
 
     @Query("SELECT * FROM usuaris WHERE id = :id LIMIT 1")
     suspend fun buscarPerId(id: Long): UsuariEntity?
+
+    @Query("SELECT * FROM usuaris WHERE email = :email LIMIT 1")
+    suspend fun buscarPerEmail(email: String): UsuariEntity?
 }

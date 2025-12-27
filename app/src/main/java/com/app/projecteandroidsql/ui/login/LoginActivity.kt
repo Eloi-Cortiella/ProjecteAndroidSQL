@@ -1,6 +1,11 @@
 package com.app.projecteandroidsql.ui.login
 
-import com.app.projecteandroidsql.R
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,36 +16,36 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
-import android.content.Intent
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import com.app.projecteandroidsql.MainActivity
+import com.app.projecteandroidsql.R
+import com.app.projecteandroidsql.data.session.SessioStore
 import com.app.projecteandroidsql.ui.theme.ProjecteAndroidSQLTheme
+import kotlinx.coroutines.launch
 
 class LoginActivity : ComponentActivity() {
+
+    private val viewModel: LoginViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             ProjecteAndroidSQLTheme {
-                // Pots usar el mateix patró que ja feies:
                 LoginScreen(
-                    viewModel = LoginViewModel(),
+                    viewModel = viewModel,
                     onLoginSuccess = {
-                        // Quan el login és correcte → anem a la pantalla principal
                         val intent = Intent(this, MainActivity::class.java)
                         startActivity(intent)
-                        finish() // Tanquem la pantalla de login
+                        finish()
                     }
                 )
             }
@@ -66,7 +71,6 @@ fun LoginScreen(
     }
 }
 
-
 @Composable
 fun Login(
     modifier: Modifier,
@@ -77,48 +81,63 @@ fun Login(
     val password: String by viewModel.password.observeAsState("")
     val loginEnable: Boolean by viewModel.loginEnable.observeAsState(false)
     val isLoading: Boolean by viewModel.isLoading.observeAsState(false)
-    val coroutineScope = rememberCoroutineScope()
+    val errorMessage: String? by viewModel.errorMessage.observeAsState(null)
 
-    if (isLoading) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Mostrem error quan apareix
+    LaunchedEffect(errorMessage) {
+        if (!errorMessage.isNullOrBlank()) {
+            snackbarHostState.showSnackbar(errorMessage!!)
+            viewModel.consumirError()
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(padding),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator()
-        }
-        return
-    } else {
-        Column(modifier = modifier) {
-            HeaderImatge()
-            Spacer(modifier = Modifier.padding(16.dp))
-            EmailField(email) { viewModel.onLoginChanged(it, password) }
-            Spacer(modifier = Modifier.padding(4.dp))
-            PasswordField(password) { viewModel.onLoginChanged(email, it) }
-            Spacer(modifier = Modifier.padding(8.dp))
-            ForgotPassword(Modifier.align(Alignment.Start))
-            Spacer(modifier = Modifier.padding(16.dp))
-            LoginButton(loginEnable) {
-                coroutineScope.launch {
-                    // SUPOSANT que onLoginSelected() retorna Boolean
-                    val success = viewModel.onLoginSelected()
-                    if (success) {
-                        onLoginSuccess()
+            if (isLoading) {
+                CircularProgressIndicator()
+                return@Box
+            }
+
+            Column(modifier = modifier) {
+                HeaderImatge()
+                Spacer(modifier = Modifier.padding(16.dp))
+                EmailField(email) { viewModel.onLoginChanged(it, password) }
+                Spacer(modifier = Modifier.padding(4.dp))
+                PasswordField(password) { viewModel.onLoginChanged(email, it) }
+                Spacer(modifier = Modifier.padding(8.dp))
+                ForgotPassword(Modifier.align(Alignment.Start))
+                Spacer(modifier = Modifier.padding(16.dp))
+
+                LoginButton(loginEnable) {
+                    scope.launch {
+                        val idUsuari = viewModel.onLoginSelected(context)
+                        if (idUsuari != null) {
+                            SessioStore(context).establirUsuariActual(idUsuari)
+                            onLoginSuccess()
+                        }
                     }
-                    // Si no retorna res, hauràs de fer que el ViewModel expose un LiveData d’èxit
                 }
             }
         }
     }
 }
 
-
-
-
 @Composable
-fun EmailField(email:String, onTextFieldChanged:(String) -> Unit) {
-    TextField(value = email, {onTextFieldChanged(it)},
+fun EmailField(email: String, onTextFieldChanged: (String) -> Unit) {
+    TextField(
+        value = email,
+        onValueChange = { onTextFieldChanged(it) },
         modifier = Modifier.fillMaxWidth(),
         placeholder = { Text(text = "Email") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -127,15 +146,16 @@ fun EmailField(email:String, onTextFieldChanged:(String) -> Unit) {
     )
 }
 
-
 @Composable
-fun PasswordField(password:String, onTextFieldChanged:(String) -> Unit) {
-    TextField(value = password, {onTextFieldChanged(it)},
+fun PasswordField(password: String, onTextFieldChanged: (String) -> Unit) {
+    TextField(
+        value = password,
+        onValueChange = { onTextFieldChanged(it) },
         modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text(text = "Password") },
+        placeholder = { Text(text = "Contrasenya") },
         visualTransformation = PasswordVisualTransformation(),
         singleLine = true,
-        maxLines = 1,
+        maxLines = 1
     )
 }
 
@@ -143,7 +163,7 @@ fun PasswordField(password:String, onTextFieldChanged:(String) -> Unit) {
 fun ForgotPassword(modifier: Modifier) {
     Text(
         text = stringResource(id = R.string.forgot_password),
-        modifier = Modifier.clickable { },
+        modifier = modifier.clickable { },
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
         color = Color.Black
@@ -154,11 +174,15 @@ fun ForgotPassword(modifier: Modifier) {
 fun LoginButton(loginEnable: Boolean, onLoginSelected: () -> Unit) {
     Button(
         onClick = { onLoginSelected() },
-        modifier = Modifier.fillMaxWidth().height(48.dp),
-        colors = ButtonDefaults.buttonColors(contentColor = Color.White,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp),
+        colors = ButtonDefaults.buttonColors(
+            contentColor = Color.White,
             disabledContainerColor = Color.Gray,
             disabledContentColor = Color.Black
-        ), enabled = loginEnable
+        ),
+        enabled = loginEnable
     ) {
         Text(text = "Iniciar Sessió")
     }
