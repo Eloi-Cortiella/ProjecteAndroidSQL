@@ -1,6 +1,7 @@
 package com.app.projecteandroidsql.ui.perfil
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -62,6 +63,8 @@ import androidx.compose.ui.unit.dp
 import com.app.projecteandroidsql.ui.theme.ProjecteAndroidSQLTheme
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.app.projecteandroidsql.data.session.SessioStore
+import com.app.projecteandroidsql.ui.login.LoginActivity
 
 class PerfilActivity : ComponentActivity() {
 
@@ -91,6 +94,7 @@ fun PerfilScreen(viewModel: PerfilViewModel = viewModel()) {
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     val activity = LocalContext.current as? Activity
 
     Scaffold(
@@ -140,8 +144,14 @@ fun PerfilScreen(viewModel: PerfilViewModel = viewModel()) {
             onNotificationsChange = viewModel::onNotificationsChange,
             onDarkModeChange = viewModel::onDarkModeChange,
             onLogout = {
-                scope.launch { snackbarHostState.showSnackbar("Sessió tancada") }
-                activity?.finish()
+                scope.launch {
+                    SessioStore(context).tancarSessio()
+
+                    val intent = Intent(context, LoginActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    context.startActivity(intent)
+                }
             },
             onDeleteAccount = {
                 scope.launch {
