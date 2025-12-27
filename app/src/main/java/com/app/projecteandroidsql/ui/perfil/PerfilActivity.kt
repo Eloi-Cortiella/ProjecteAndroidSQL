@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,11 +24,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
@@ -38,16 +37,18 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -60,24 +61,34 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.projecteandroidsql.ui.theme.ProjecteAndroidSQLTheme
 import kotlinx.coroutines.launch
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 class PerfilActivity : ComponentActivity() {
+
+    private val viewModel: PerfilViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
-            ProjecteAndroidSQLTheme {
-                PerfilScreen()
+            val uiState by viewModel.uiState.collectAsState()
+
+            ProjecteAndroidSQLTheme(
+                darkTheme = uiState.darkModeEnabled,
+                dynamicColor = true
+            ) {
+                PerfilScreen(viewModel = viewModel)
             }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
 @Composable
-fun PerfilScreen(viewModel: PerfilViewModel = PerfilViewModel()) {
-    val uiState = viewModel.uiState
+fun PerfilScreen(viewModel: PerfilViewModel = viewModel()) {
+    val uiState by viewModel.uiState.collectAsState()
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val activity = LocalContext.current as? Activity
@@ -88,7 +99,7 @@ fun PerfilScreen(viewModel: PerfilViewModel = PerfilViewModel()) {
                 title = { Text("Perfil") },
                 navigationIcon = {
                     IconButton(onClick = {
-                        //activity?.onBackPressedDispatcher?.onBackPressed()
+                        // activity?.onBackPressedDispatcher?.onBackPressed()
                     }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
@@ -98,74 +109,107 @@ fun PerfilScreen(viewModel: PerfilViewModel = PerfilViewModel()) {
                 }
             )
         },
-    snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
-        Column(
+
+        PerfilContent(
+            uiState = uiState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            // Capçalera amb avatar i info principal
-            ProfileHeader(
-                name = uiState.name,
-                email = uiState.email,
-                onChangeAvatarClick = {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Funció de canviar foto pendent d'implementar")
-                    }
+            onChangeAvatarClick = {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Funció de canviar foto pendent d'implementar")
                 }
-            )
-
-            // Informació bàsica (editable)
-            ProfileInfoCard(
-                uiState = uiState,
-                onNameChange = viewModel::onNameChange,
-                onUsernameChange = viewModel::onUsernameChange,
-                onPhoneChange = viewModel::onPhoneChange,
-                onBioChange = viewModel::onBioChange,
-                onEditToggle = { viewModel.startEditing() },
-                onSave = {
-                    viewModel.saveChanges()
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Perfil actualitzat correctament")
-                    }
-                },
-                onCancel = {
-                    viewModel.cancelEditing()
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Canvis descartats")
-                    }
+            },
+            onNameChange = viewModel::onNameChange,
+            onUsernameChange = viewModel::onUsernameChange,
+            onPhoneChange = viewModel::onPhoneChange,
+            onBioChange = viewModel::onBioChange,
+            onEditToggle = viewModel::startEditing,
+            onSave = {
+                viewModel.saveChanges()
+                scope.launch { snackbarHostState.showSnackbar("Perfil actualitzat correctament") }
+            },
+            onCancel = {
+                viewModel.cancelEditing()
+                scope.launch { snackbarHostState.showSnackbar("Canvis descartats") }
+            },
+            onNotificationsChange = viewModel::onNotificationsChange,
+            onDarkModeChange = viewModel::onDarkModeChange,
+            onLogout = {
+                scope.launch { snackbarHostState.showSnackbar("Sessió tancada") }
+                activity?.finish()
+            },
+            onDeleteAccount = {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Funció d'eliminar compte pendent d'implementar")
                 }
-            )
+            }
+        )
+    }
+}
 
-            // Preferències
-            PreferencesCard(
-                notificationsEnabled = uiState.notificationsEnabled,
-                darkModeEnabled = uiState.darkModeEnabled,
-                onNotificationsChange = viewModel::onNotificationsChange,
-                onDarkModeChange = viewModel::onDarkModeChange
-            )
-
-            // Sessió / compte
-            SessionCard(
-                onLogout = {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Sessió tancada")
-                    }
-                    // Ací podries netejar credencials i anar a LoginActivity
-                    activity?.finish()
-                },
-                onDeleteAccount = {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Funció d'eliminar compte pendent d'implementar")
-                    }
-                }
-            )
+/**
+ * ✅ Composable “puro” (sense ViewModel).
+ * Això és el que usem per al Preview i també per la pantalla real.
+ */
+@Composable
+private fun PerfilContent(
+    uiState: PerfilUiState,
+    modifier: Modifier = Modifier,
+    onChangeAvatarClick: () -> Unit,
+    onNameChange: (String) -> Unit,
+    onUsernameChange: (String) -> Unit,
+    onPhoneChange: (String) -> Unit,
+    onBioChange: (String) -> Unit,
+    onEditToggle: () -> Unit,
+    onSave: () -> Unit,
+    onCancel: () -> Unit,
+    onNotificationsChange: (Boolean) -> Unit,
+    onDarkModeChange: (Boolean) -> Unit,
+    onLogout: () -> Unit,
+    onDeleteAccount: () -> Unit
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        if (uiState.isLoading) {
+            CircularProgressIndicator()
         }
+
+        ProfileHeader(
+            name = uiState.name,
+            email = uiState.email,
+            onChangeAvatarClick = onChangeAvatarClick
+        )
+
+        ProfileInfoCard(
+            uiState = uiState,
+            onNameChange = onNameChange,
+            onUsernameChange = onUsernameChange,
+            onPhoneChange = onPhoneChange,
+            onBioChange = onBioChange,
+            onEditToggle = onEditToggle,
+            onSave = onSave,
+            onCancel = onCancel
+        )
+
+        PreferencesCard(
+            notificationsEnabled = uiState.notificationsEnabled,
+            darkModeEnabled = uiState.darkModeEnabled,
+            onNotificationsChange = onNotificationsChange,
+            onDarkModeChange = onDarkModeChange
+        )
+
+        SessionCard(
+            onLogout = onLogout,
+            onDeleteAccount = onDeleteAccount
+        )
     }
 }
 
@@ -272,7 +316,7 @@ private fun ProfileInfoCard(
 
             OutlinedTextField(
                 value = uiState.email,
-                onValueChange = { /* correu generalment no editable */ },
+                onValueChange = { },
                 label = { Text("Correu electrònic") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -317,15 +361,12 @@ private fun ProfileInfoCard(
                     Button(
                         onClick = onSave,
                         modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Guardar")
-                    }
+                    ) { Text("Guardar") }
+
                     OutlinedButton(
                         onClick = onCancel,
                         modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Cancel·lar")
-                    }
+                    ) { Text("Cancel·lar") }
                 }
             }
         }
@@ -407,9 +448,7 @@ private fun PreferenceRow(
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
-        ) {
-            icon()
-        }
+        ) { icon() }
 
         Column(
             modifier = Modifier
@@ -486,11 +525,42 @@ private fun SessionCard(
     }
 }
 
-private fun initialsFromName(name: String): String {
-    return name
-        .split(" ")
+private fun initialsFromName(name: String): String =
+    name.split(" ")
         .filter { it.isNotBlank() }
         .take(2)
         .map { it.first().uppercaseChar() }
         .joinToString("")
+
+// ✅ Preview sense ViewModel
+@Preview(showBackground = true)
+@Composable
+private fun PerfilContentPreview() {
+    ProjecteAndroidSQLTheme(darkTheme = false, dynamicColor = true) {
+        PerfilContent(
+            uiState = PerfilUiState(
+                name = "Eloi Cortiella",
+                email = "eloi@example.com",
+                username = "eloi123",
+                phone = "+34 600 111 222",
+                bio = "Lector i col·leccionista de llibres.",
+                notificationsEnabled = true,
+                darkModeEnabled = false,
+                isEditing = false,
+                isLoading = false
+            ),
+            onChangeAvatarClick = {},
+            onNameChange = {},
+            onUsernameChange = {},
+            onPhoneChange = {},
+            onBioChange = {},
+            onEditToggle = {},
+            onSave = {},
+            onCancel = {},
+            onNotificationsChange = {},
+            onDarkModeChange = {},
+            onLogout = {},
+            onDeleteAccount = {}
+        )
+    }
 }

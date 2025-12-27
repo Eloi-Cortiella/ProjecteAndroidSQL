@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.app.projecteandroidsql.ui.home.HomeScreen
+import com.app.projecteandroidsql.ui.perfil.PerfilScreen
 import com.app.projecteandroidsql.ui.theme.ProjecteAndroidSQLTheme
 
 class MainActivity : ComponentActivity() {
@@ -36,6 +37,8 @@ class MainActivity : ComponentActivity() {
     /**
      * Classe per a la vista principal de l'aplicació afegida amb jetpack compose
      */
+
+    // MainActivity.kt
     @PreviewScreenSizes
     @Composable
     fun IniciarApp() {
@@ -43,23 +46,30 @@ class MainActivity : ComponentActivity() {
 
         NavigationSuiteScaffold(
             navigationSuiteItems = {
-                AppDestinations.entries.forEach {
+                AppDestinations.entries.forEach { destination ->
                     item(
                         icon = {
                             Icon(
-                                it.icon,
-                                contentDescription = it.label
+                                imageVector = destination.icon,
+                                contentDescription = destination.label
                             )
                         },
-                        label = { Text(it.label) },
-                        selected = it == currentDestination,
-                        onClick = { currentDestination = it }
+                        label = { Text(destination.label) },
+                        selected = destination == currentDestination,
+                        onClick = { currentDestination = destination }
                     )
                 }
             }
-        )
-        HomeScreen();
+        ) { // Conté el contingut de la pantalla
+            when (currentDestination) {
+                AppDestinations.HOME -> HomeScreen()
+                AppDestinations.BIBLIOTECA -> {
+                }
+                AppDestinations.PERFIL -> PerfilScreen()
+            }
+        }
     }
+
 
     enum class AppDestinations(
         val label: String,

@@ -1,8 +1,13 @@
 package com.app.projecteandroidsql.ui.perfil
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class PerfilUiState(
     val name: String = "Nom Exemple",
@@ -12,54 +17,115 @@ data class PerfilUiState(
     val bio: String = "Aquí pots escriure una breu descripció sobre tu.",
     val notificationsEnabled: Boolean = true,
     val darkModeEnabled: Boolean = false,
-    val isEditing: Boolean = false
+    val isEditing: Boolean = false,
+    val isLoading: Boolean = true,
+    val errorMessage: String? = null
 )
 
-class PerfilViewModel {
+class PerfilViewModel(app: Application) : AndroidViewModel(app) {
 
-    // Estat "guardat" real (el que estaria a BD/servidor)
-    private var savedState = PerfilUiState()
+    private val prefs = PerfilPreferences(app.applicationContext)
 
-    // Estat visible actualment a la UI (editable)
-    var uiState by mutableStateOf(savedState)
-        private set
+    private val _uiState = MutableStateFlow(PerfilUiState(isLoading = true))
+    val uiState: StateFlow<PerfilUiState> = _uiState.asStateFlow()
 
-    fun onNameChange(newName: String) {
-        uiState = uiState.copy(name = newName)
+    // Snapshot de l’últim estat persistit (per Cancel·lar)
+    private var persistedSnapshot: PerfilUiState = PerfilUiState(isLoading = true)
+
+    init {
+        // Observem DataStore i omplim la UI
+        viewModelScope.launch {
+            prefs.flow.collect { p ->
+                val persisted = PerfilUiState(
+                    name = p.name,
+                    email = p.email,
+                    username = p.username,
+                    phone = p.phone,
+                    bio = p.bio,
+                    notificationsEnabled = p.notificationsEnabled,
+                    darkModeEnabled = p.darkModeEnabled,
+                    isEditing = false,
+                    isLoading = false,
+                    errorMessage = null
+                )
+                persistedSnapshot = persisted
+
+                // Si no estem editant, refresquem-ho tot.
+                // Si estem editant, no trepitgem el que l’usuari està escrivint.
+                if (!_uiState.value.isEditing) {
+                    _uiState.value = persisted
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            notificationsEnabled = p.notificationsEnabled,
+                            darkModeEnabled = p.darkModeEnabled,
+                            isLoading = false,
+                            errorMessage = null
+                        )
+                    }
+                }
+            }
+        }
     }
 
-    fun onUsernameChange(newUsername: String) {
-        uiState = uiState.copy(username = newUsername)
-    }
+    // --- Camps editables ---
+    fun onNameChange(v: String) = _uiState.update { it.copy(name = v) }
+    fun onUsernameChange(v: String) = _uiState.update { it.copy(username = v) }
+    fun onPhoneChange(v: String) = _uiState.update { it.copy(phone = v) }
+    fun onBioChange(v: String) = _uiState.update { it.copy(bio = v) }
 
-    fun onPhoneChange(newPhone: String) {
-        uiState = uiState.copy(phone = newPhone)
-    }
-
-    fun onBioChange(newBio: String) {
-        uiState = uiState.copy(bio = newBio)
-    }
-
+    // --- Preferències (es persisteixen al moment) ---
     fun onNotificationsChange(enabled: Boolean) {
-        uiState = uiState.copy(notificationsEnabled = enabled)
+        _uiState.update { it.copy(notificationsEnabled = enabled) }
+        viewModelScope.launch {
+            runCatching { prefs.setNotifications(enabled) }
+                .onFailure { e -> _uiState.update { it.copy(errorMessage = e.message) } }
+        }
     }
 
     fun onDarkModeChange(enabled: Boolean) {
-        uiState = uiState.copy(darkModeEnabled = enabled)
+        _uiState.update { it.copy(darkModeEnabled = enabled) }
+        viewModelScope.launch {
+            runCatching { prefs.setDarkMode(enabled) }
+                .onFailure { e -> _uiState.update { it.copy(errorMessage = e.message) } }
+        }
     }
 
+    // --- Mode edició ---
     fun startEditing() {
-        uiState = uiState.copy(isEditing = true)
+        _uiState.update { it.copy(isEditing = true, errorMessage = null) }
     }
 
     fun cancelEditing() {
-        // Tornem a l'estat guardat i llevem el mode edició
-        uiState = savedState.copy(isEditing = false)
+        // Tornem al snapshot guardat (persistit)
+        _uiState.value = persistedSnapshot
     }
 
     fun saveChanges() {
-        // Ací en un futur podries fer crida a API / BD
-        savedState = uiState.copy(isEditing = false)
-        uiState = savedState
+        val cur = _uiState.value
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+            runCatching {
+                prefs.saveProfile(
+                    name = cur.name,
+                    email = cur.email, // si no vols editable, això igualment ho manté
+                    username = cur.username,
+                    phone = cur.phone,
+                    bio = cur.bio
+                )
+            }.onSuccess {
+                // Quan DataStore emeti, ja ens posarà isEditing = false i isLoading=false,
+                // però tanquem edició immediat per UX
+                _uiState.update { it.copy(isEditing = false, isLoading = false) }
+            }.onFailure { e ->
+                _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+            }
+        }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(errorMessage = null) }
     }
 }
