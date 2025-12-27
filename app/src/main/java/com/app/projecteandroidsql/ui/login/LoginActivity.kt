@@ -2,6 +2,7 @@ package com.app.projecteandroidsql.ui.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,10 +25,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import com.app.projecteandroidsql.MainActivity
 import com.app.projecteandroidsql.R
 import com.app.projecteandroidsql.data.session.SessioStore
 import com.app.projecteandroidsql.ui.theme.ProjecteAndroidSQLTheme
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class LoginActivity : ComponentActivity() {
@@ -38,16 +41,27 @@ class LoginActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        setContent {
-            ProjecteAndroidSQLTheme {
-                LoginScreen(
-                    viewModel = viewModel,
-                    onLoginSuccess = {
-                        val intent = Intent(this, MainActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    }
-                )
+        // Comprovem sessió ABANS de pintar el login
+        lifecycleScope.launch {
+            val sessio = SessioStore(this@LoginActivity).sessioFlow.first()
+            if (sessio.estaLogejat) {
+                startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                finish()
+                return@launch
+            }
+
+            // Si NO hi ha sessió, llavors sí → mostrem Login UI
+            setContent {
+                ProjecteAndroidSQLTheme {
+                    LoginScreen(
+                        viewModel = viewModel,
+                        onLoginSuccess = {
+                            val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        }
+                    )
+                }
             }
         }
     }
@@ -124,6 +138,8 @@ fun Login(
                         val idUsuari = viewModel.onLoginSelected(context)
                         if (idUsuari != null) {
                             SessioStore(context).establirUsuariActual(idUsuari)
+                            val sessio = SessioStore(context).sessioFlow.first()
+                            Log.d("SESSIO", "Sessió llegida: ${sessio.idUsuariActual}")
                             onLoginSuccess()
                         }
                     }
