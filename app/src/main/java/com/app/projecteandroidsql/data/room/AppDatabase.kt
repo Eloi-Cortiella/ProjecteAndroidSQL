@@ -14,7 +14,7 @@ import com.app.projecteandroidsql.data.room.entity.UsuariEntity
 
 @Database(
     entities = [UsuariEntity::class, LlibreEntity::class, EntradaBibliotecaEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(RoomConverters::class)

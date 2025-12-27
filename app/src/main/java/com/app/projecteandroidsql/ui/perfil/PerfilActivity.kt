@@ -65,6 +65,11 @@ import kotlinx.coroutines.launch
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.projecteandroidsql.data.session.SessioStore
 import com.app.projecteandroidsql.ui.login.LoginActivity
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material.icons.filled.MenuBook
+import com.app.projecteandroidsql.data.session.Sessio
+import com.app.projecteandroidsql.data.room.AppDatabase
+import com.app.projecteandroidsql.data.room.dao.StatsBiblioteca
 
 class PerfilActivity : ComponentActivity() {
 
@@ -123,6 +128,7 @@ fun PerfilScreen(viewModel: PerfilViewModel = viewModel()) {
                 .padding(innerPadding)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
+            // FALTA IMPLEMENTAR
             onChangeAvatarClick = {
                 scope.launch {
                     snackbarHostState.showSnackbar("Funció de canviar foto pendent d'implementar")
@@ -133,10 +139,12 @@ fun PerfilScreen(viewModel: PerfilViewModel = viewModel()) {
             onPhoneChange = viewModel::onPhoneChange,
             onBioChange = viewModel::onBioChange,
             onEditToggle = viewModel::startEditing,
+            // FALTA IMPLEMENTAR
             onSave = {
                 viewModel.saveChanges()
                 scope.launch { snackbarHostState.showSnackbar("Perfil actualitzat correctament") }
             },
+            // FALTA IMPLEMENTAR
             onCancel = {
                 viewModel.cancelEditing()
                 scope.launch { snackbarHostState.showSnackbar("Canvis descartats") }
@@ -153,6 +161,7 @@ fun PerfilScreen(viewModel: PerfilViewModel = viewModel()) {
                     context.startActivity(intent)
                 }
             },
+            // FALTA IMPLEMENTAR
             onDeleteAccount = {
                 scope.launch {
                     snackbarHostState.showSnackbar("Funció d'eliminar compte pendent d'implementar")
@@ -208,13 +217,15 @@ private fun PerfilContent(
             onSave = onSave,
             onCancel = onCancel
         )
-
+        // NO FUNCIONA FALTA IMPLEMENTAR
         PreferencesCard(
             notificationsEnabled = uiState.notificationsEnabled,
             darkModeEnabled = uiState.darkModeEnabled,
             onNotificationsChange = onNotificationsChange,
             onDarkModeChange = onDarkModeChange
         )
+
+        BibliotecaStatsCard()
 
         SessionCard(
             onLogout = onLogout,
@@ -572,5 +583,88 @@ private fun PerfilContentPreview() {
             onLogout = {},
             onDeleteAccount = {}
         )
+    }
+}
+
+@Composable
+private fun BibliotecaStatsCard() {
+    val context = LocalContext.current
+
+    // 1) Sessió -> quin usuari està actiu
+    val sessioStore = remember { SessioStore(context) }
+    val sessio by sessioStore.sessioFlow.collectAsState(initial = Sessio())
+
+    // 2) Si no hi ha sessió, no té sentit mostrar stats
+    val idUsuari = sessio.idUsuariActual
+    if (idUsuari == null) return
+
+    // 3) Room -> stats en temps real
+    val db = remember { AppDatabase.getInstance(context) }
+    val statsNullable by db.entradaBibliotecaDao().observarStats(idUsuari)
+        .collectAsState(initial = null)
+
+    val stats = statsNullable ?: StatsBiblioteca(llegits = 0, enCurs = 0, perLlegir = 0)
+
+    val total = stats.total
+    val progress = if (total == 0) 0f else (stats.llegits.toFloat() / total.toFloat())
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Filled.MenuBook,
+                    contentDescription = "Biblioteca",
+                )
+                Spacer(Modifier.size(8.dp))
+                Text(
+                    text = "Biblioteca",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Text(
+                text = if (total == 0) "Encara no tens llibres a la biblioteca."
+                else "Progrés de lectura: ${stats.llegits} / $total llegits",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                StatChip("Llegits", stats.llegits)
+                StatChip("En curs", stats.enCurs)
+                StatChip("Per llegir", stats.perLlegir)
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatChip(label: String, value: Int) {
+    Card(
+        shape = RoundedCornerShape(999.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("$label: ", fontWeight = FontWeight.SemiBold)
+            Text(value.toString())
+        }
     }
 }
