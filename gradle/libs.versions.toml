@@ -15,6 +15,15 @@ constraintlayout = "2.1.4"
 lifecycleLivedataKtx = "2.9.4"
 lifecycleViewmodelKtx = "2.9.4"
 runtimeLivedata = "1.9.5"
+datastore = "1.2.0"
+lifecycle = "2.8.7"
+# Room (última estable)
+room = "2.8.1"
+
+# KSP: IMPORTANT -> ha d'anar alineat amb la versió de Kotlin del projecte.
+# Mira la versió de Kotlin que uses al mateix toml (ex: kotlin = "2.3.3")
+# i posa una versió KSP compatible (ex: "2.3.3-2.3.3")
+ksp = "2.0.21-1.0.27"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -38,10 +47,17 @@ androidx-annotation = { group = "androidx.annotation", name = "annotation", vers
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 androidx-compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx     = { group = "androidx.room", name = "room-ktx",     version.ref = "room" }
+androidx-room-compiler= { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

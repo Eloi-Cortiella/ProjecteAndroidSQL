@@ -9,43 +9,68 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = GreenBlue,
-    onPrimary = Color.White,
-    secondary = PistachoGreen,
-    onSecondary = Brown,
-    tertiary = LighGreen,
-    onTertiary = Brown,
-    background = Brown,
-    onBackground = Color.White,
-    surface = LightGrey,
-    onSurface = Color.White,
+    primary = Primary,
+    onPrimary = OnPrimary,
+    primaryContainer = PrimaryContainer,
+    onPrimaryContainer = OnPrimaryContainer,
+
+    secondary = Secondary,
+    onSecondary = OnSecondary,
+    secondaryContainer = SecondaryContainer,
+    onSecondaryContainer = OnSecondaryContainer,
+
+    tertiary = Tertiary,
+    onTertiary = OnTertiary,
+
+    background = BackgroundDark,
+    onBackground = OnBackgroundDark,
+
+    surface = SurfaceDark,
+    onSurface = OnSurfaceDark,
+    surfaceVariant = SurfaceVariantDark,
+    onSurfaceVariant = OnSurfaceVariantDark,
+
+    outline = OutlineDark,
+
+    error = Error,
+    onError = OnError
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = PistachoGreen,
-    onPrimary = Color.White,
-    primaryContainer = LightGrey,
-    onPrimaryContainer = Color.White,
-    secondary = LighGreen,
-    onSecondary = Brown,
-    tertiary = LightGrey,
-    background = Brown,
-    onBackground = Color.White,
-    surface = LightGrey,
-    onSurface = Color.White,
-    surfaceVariant = LightGrey,
-    onSurfaceVariant = Color.White,
-    outline = PistachoGreen
+    primary = Primary,
+    onPrimary = OnPrimary,
+    primaryContainer = PrimaryContainer,
+    onPrimaryContainer = OnPrimaryContainer,
+
+    secondary = Secondary,
+    onSecondary = OnSecondary,
+    secondaryContainer = SecondaryContainer,
+    onSecondaryContainer = OnSecondaryContainer,
+
+    tertiary = Tertiary,
+    onTertiary = OnTertiary,
+
+    background = BackgroundLight,
+    onBackground = OnBackgroundLight,
+
+    surface = SurfaceLight,
+    onSurface = OnSurfaceLight,
+    surfaceVariant = SurfaceVariantLight,
+    onSurfaceVariant = OnSurfaceVariantLight,
+
+    outline = OutlineLight,
+
+    error = Error,
+    onError = OnError
 )
 
 @Composable
 fun ProjecteAndroidSQLTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // <- recomanat mentre ajustes la paleta
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -53,7 +78,6 @@ fun ProjecteAndroidSQLTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

@@ -1,5 +1,6 @@
 package com.app.projecteandroidsql
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,12 +20,29 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.lifecycle.lifecycleScope
+import com.app.projecteandroidsql.data.session.SessioStore
 import com.app.projecteandroidsql.ui.home.HomeScreen
+import com.app.projecteandroidsql.ui.login.LoginActivity
+import com.app.projecteandroidsql.ui.perfil.PerfilScreen
+import com.app.projecteandroidsql.ui.biblioteca.BibliotecaScreen
 import com.app.projecteandroidsql.ui.theme.ProjecteAndroidSQLTheme
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lifecycleScope.launch {
+            val sessioStore = SessioStore(this@MainActivity)
+            val sessio = sessioStore.sessioFlow.first()
+
+            if (!sessio.estaLogejat) {
+                startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                finish()
+                return@launch
+            }
+        }
         enableEdgeToEdge()
         setContent {
             ProjecteAndroidSQLTheme {
@@ -59,13 +77,11 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-        ) { // El contenido de la pantalla va aquí dentro
+        ) { // Conté el contingut de la pantalla
             when (currentDestination) {
                 AppDestinations.HOME -> HomeScreen()
-                AppDestinations.BIBLIOTECA -> {
-                }
-                AppDestinations.PERFIL -> {
-                }
+                AppDestinations.BIBLIOTECA -> BibliotecaScreen()
+                AppDestinations.PERFIL -> PerfilScreen()
             }
         }
     }
