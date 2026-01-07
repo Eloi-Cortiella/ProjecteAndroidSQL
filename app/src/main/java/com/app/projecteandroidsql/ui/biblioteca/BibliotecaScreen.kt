@@ -37,6 +37,7 @@ fun BibliotecaScreen() {
     var query by remember { mutableStateOf("") }
     var filtre by remember { mutableStateOf(FiltreEstat.TOTS) }
     var idEntradaAEliminar by remember { mutableStateOf<Long?>(null) }
+    var llibreAEditar by remember { mutableStateOf<LlibreBibliotecaItem?>(null) }
 
     val db = remember { AppDatabase.getInstance(context) }
 
@@ -89,6 +90,24 @@ fun BibliotecaScreen() {
                 },
                 dismissButton = {
                     TextButton(onClick = { idEntradaAEliminar = null }) { Text("Cancel·lar") }
+                }
+            )
+        }
+        if (llibreAEditar != null) {
+            EditarLlibreDialog(
+                item = llibreAEditar!!,
+                onDismiss = { llibreAEditar = null },
+                onGuardar = { nouTitol, nouAutor ->
+                    val actual = llibreAEditar ?: return@EditarLlibreDialog
+                    llibreAEditar = null
+
+                    scope.launch {
+                        db.llibreDao().actualitzarTitolAutor(
+                            idLlibre = actual.idLlibre,
+                            titol = nouTitol,
+                            autor = nouAutor
+                        )
+                    }
                 }
             )
         }
@@ -154,9 +173,8 @@ fun BibliotecaScreen() {
                                         .actualitzarEstatLectura(item.idEntrada, nou.name)
                                 }
                             },
-                            onEliminar = {
-                                idEntradaAEliminar = item.idEntrada
-                            }
+                            onEliminar = { idEntradaAEliminar = item.idEntrada },
+                            onEditar = { llibreAEditar = item }
                         )
                     }
                 }
@@ -169,7 +187,8 @@ fun BibliotecaScreen() {
 private fun LlibreCard(
     item: LlibreBibliotecaItem,
     onCanviarEstat: (EstatLectura) -> Unit,
-    onEliminar: () -> Unit
+    onEliminar: () -> Unit,
+    onEditar: () -> Unit
 ) {
     var menu by remember { mutableStateOf(false) }
 
@@ -225,8 +244,51 @@ private fun LlibreCard(
             TextButton(onClick = onEliminar) {
                 Text("Eliminar")
             }
+
+            TextButton(onClick = onEditar) {
+                Text("Editar")
+            }
         }
     }
+}
+
+@Composable
+private fun EditarLlibreDialog(
+    item: LlibreBibliotecaItem,
+    onDismiss: () -> Unit,
+    onGuardar: (titol: String, autor: String) -> Unit
+) {
+    var titol by remember { mutableStateOf(item.titol) }
+    var autor by remember { mutableStateOf(item.autor) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar llibre") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = titol,
+                    onValueChange = { titol = it },
+                    label = { Text("Títol") },
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = autor,
+                    onValueChange = { autor = it },
+                    label = { Text("Autor") },
+                    singleLine = true
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onGuardar(titol.trim(), autor.trim()) }) {
+                Text("Guardar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel·lar") }
+        }
+    )
 }
 
 

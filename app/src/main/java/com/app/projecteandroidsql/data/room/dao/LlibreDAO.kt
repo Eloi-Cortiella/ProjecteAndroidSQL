@@ -38,4 +38,27 @@ interface LlibreDao {
         """
     )
     fun observarLlibresAmbEstat(idUsuari: Long): Flow<List<LlibreAmbEstat>>
+
+    @Query("""
+        UPDATE llibre SET
+            titol = :titol,
+            autor = :autor,
+            data_publicacio = :dataPublicacio,
+            num_pagines = :numPagines,
+            sinopsi = :sinopsi,
+            portada = :portada
+        WHERE id = :idLlibre
+    """)
+    suspend fun actualitzarLlibre(
+        idLlibre: Long,
+        titol: String,
+        autor: String,
+        dataPublicacio: Int?,
+        numPagines: Int?,
+        sinopsi: String?,
+        portada: String?
+    ): Int
+
+    @Query("UPDATE llibre SET titol = :titol, autor = :autor WHERE id = :idLlibre")
+    suspend fun actualitzarTitolAutor(idLlibre: Long, titol: String, autor: String): Int
 }
