@@ -52,7 +52,7 @@ fun HomeScreen(viewModel: HomeViewModel = remember { HomeViewModel() }) {
 fun afegirLlibre(viewModel: HomeViewModel, onDismiss: () -> Unit) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    var title by rememberSaveable { mutableStateOf(TextFieldValue("")) }
+    var title by rememberSaveable { mutableStateOf("") }
     Scaffold(
         topBar = { CenterAlignedTopAppBar(title = { Text("Afegir llibre") }) },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -74,7 +74,7 @@ fun afegirLlibre(viewModel: HomeViewModel, onDismiss: () -> Unit) {
 
             Button(
                 onClick = {
-                    val raw = title.text
+                    val raw = title
                     if (!viewModel.validarTitol(raw)) {
                         scope.launch {
                             snackbarHostState.showSnackbar("El títol ha de tenir almenys 3 caràcters.")
@@ -83,7 +83,7 @@ fun afegirLlibre(viewModel: HomeViewModel, onDismiss: () -> Unit) {
                     }
 
                     val formatted = viewModel.formatTitol(raw)
-                    title = TextFieldValue("")
+                    title = ""
 
                     scope.launch {
                         snackbarHostState.showSnackbar("Afegida: \"$formatted\"")
@@ -91,7 +91,7 @@ fun afegirLlibre(viewModel: HomeViewModel, onDismiss: () -> Unit) {
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Afegir tasca")
+                Text("Afegir llibre")
             }
         }
     }
