@@ -69,7 +69,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material.icons.filled.MenuBook
 import com.app.projecteandroidsql.data.session.Sessio
 import com.app.projecteandroidsql.data.room.AppDatabase
-import com.app.projecteandroidsql.data.room.dao.StatsBiblioteca
+import com.app.projecteandroidsql.data.room.model.StatsBiblioteca
 import androidx.compose.ui.platform.LocalInspectionMode
 import com.app.projecteandroidsql.data.room.model.EstatLectura
 
@@ -459,13 +459,13 @@ private fun BibliotecaStatsCard() {
     val context = LocalContext.current
     val isPreview = LocalInspectionMode.current
 
-    // Preview: dades fake
-    if (isPreview) {
-        BibliotecaStatsCardUI(
-            stats = StatsBiblioteca(llegits = 7, enCurs = 2, perLlegir = 11)
-        )
-        return
-    }
+//    // Preview: dades fake
+//    if (isPreview) {
+//        BibliotecaStatsCardUI(
+//            stats = StatsBiblioteca(llegits = 7, enCurs = 2, perLlegir = 11)
+//        )
+//        return
+//    }
 
     // 1) Sessió -> quin usuari està actiu
     val sessioStore = remember { SessioStore(context) }
@@ -480,18 +480,16 @@ private fun BibliotecaStatsCard() {
         db.entradaBibliotecaDao().observarStats(
             idUsuari = idUsuari,
             estatLlegit = EstatLectura.LLEGIT.name,
+            estatEnCurs = EstatLectura.EN_CURS.name,
             estatPerLlegir = EstatLectura.PER_LLEGIR.name
         )
     }
 
-    // HAURIA DE FUNCIONAR
-//    val stats by statsFlow.collectAsState(
-//        initial = StatsBiblioteca(llegits = 0, enCurs = 0, perLlegir = 0)
-//    )
+    val statsUI by statsFlow.collectAsState(
+        initial = StatsBiblioteca(llegits = 0, enCurs = 0, perLlegir = 0)
+    )
 
-    val stats = StatsBiblioteca(llegits = 0, enCurs = 0, perLlegir = 0)
-
-    BibliotecaStatsCardUI(stats = stats)
+    BibliotecaStatsCardUI(stats = statsUI)
 }
 
 @Composable

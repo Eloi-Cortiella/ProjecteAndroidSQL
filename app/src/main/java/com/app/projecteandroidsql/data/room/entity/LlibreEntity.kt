@@ -12,8 +12,8 @@ data class LlibreEntity(
 
     @ColumnInfo(name = "titol") val titol: String,
     @ColumnInfo(name = "autor") val autor: String,
-    @ColumnInfo(name = "data_publicacio") val data_publicacio: String, // o Int si és any
-    @ColumnInfo(name = "num_pagines") val num_pagines: Int,
-    @ColumnInfo(name = "sinopsi") val sinopsi: String,
-    @ColumnInfo(name = "portada") val portada: String          // url o path local
+    @ColumnInfo(name = "data_publicacio") val data_publicacio: Int? = null, // o Int si és any
+    @ColumnInfo(name = "num_pagines") val num_pagines: Int? = null,
+    @ColumnInfo(name = "sinopsi") val sinopsi: String? = null,
+    @ColumnInfo(name = "portada") val portada: String? = null          // url o path local
 )
