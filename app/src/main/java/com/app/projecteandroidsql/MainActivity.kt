@@ -25,6 +25,7 @@ import com.app.projecteandroidsql.data.session.SessioStore
 import com.app.projecteandroidsql.ui.home.HomeScreen
 import com.app.projecteandroidsql.ui.login.LoginActivity
 import com.app.projecteandroidsql.ui.perfil.PerfilScreen
+import com.app.projecteandroidsql.ui.biblioteca.BibliotecaScreen
 import com.app.projecteandroidsql.ui.theme.ProjecteAndroidSQLTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -79,8 +80,7 @@ class MainActivity : ComponentActivity() {
         ) { // Conté el contingut de la pantalla
             when (currentDestination) {
                 AppDestinations.HOME -> HomeScreen()
-                AppDestinations.BIBLIOTECA -> {
-                }
+                AppDestinations.BIBLIOTECA -> BibliotecaScreen()
                 AppDestinations.PERFIL -> PerfilScreen()
             }
         }

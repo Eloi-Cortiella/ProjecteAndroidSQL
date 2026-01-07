@@ -70,6 +70,8 @@ import androidx.compose.material.icons.filled.MenuBook
 import com.app.projecteandroidsql.data.session.Sessio
 import com.app.projecteandroidsql.data.room.AppDatabase
 import com.app.projecteandroidsql.data.room.dao.StatsBiblioteca
+import androidx.compose.ui.platform.LocalInspectionMode
+import com.app.projecteandroidsql.data.room.model.EstatLectura
 
 class PerfilActivity : ComponentActivity() {
 
@@ -219,12 +221,12 @@ private fun PerfilContent(
             onCancel = onCancel
         )
         // NO FUNCIONA FALTA IMPLEMENTAR
-        PreferencesCard(
-            notificationsEnabled = uiState.notificationsEnabled,
-            darkModeEnabled = uiState.darkModeEnabled,
-            onNotificationsChange = onNotificationsChange,
-            onDarkModeChange = onDarkModeChange
-        )
+//        PreferencesCard(
+//            notificationsEnabled = uiState.notificationsEnabled,
+//            darkModeEnabled = uiState.darkModeEnabled,
+//            onNotificationsChange = onNotificationsChange,
+//            onDarkModeChange = onDarkModeChange
+//        )
 
         BibliotecaStatsCard()
 
@@ -453,6 +455,100 @@ private fun PreferencesCard(
 }
 
 @Composable
+private fun BibliotecaStatsCard() {
+    val context = LocalContext.current
+    val isPreview = LocalInspectionMode.current
+
+    // Preview: dades fake
+    if (isPreview) {
+        BibliotecaStatsCardUI(
+            stats = StatsBiblioteca(llegits = 7, enCurs = 2, perLlegir = 11)
+        )
+        return
+    }
+
+    // 1) Sessió -> quin usuari està actiu
+    val sessioStore = remember { SessioStore(context) }
+    val sessio by sessioStore.sessioFlow.collectAsState(initial = Sessio())
+
+    val idUsuari = sessio.idUsuariActual ?: return
+
+    // 2) Room -> stats en temps real
+    val db = remember { AppDatabase.getInstance(context) }
+
+    val statsFlow = remember(idUsuari) {
+        db.entradaBibliotecaDao().observarStats(
+            idUsuari = idUsuari,
+            estatLlegit = EstatLectura.LLEGIT.name,
+            estatPerLlegir = EstatLectura.PER_LLEGIR.name
+        )
+    }
+
+    // HAURIA DE FUNCIONAR
+//    val stats by statsFlow.collectAsState(
+//        initial = StatsBiblioteca(llegits = 0, enCurs = 0, perLlegir = 0)
+//    )
+
+    val stats = StatsBiblioteca(llegits = 0, enCurs = 0, perLlegir = 0)
+
+    BibliotecaStatsCardUI(stats = stats)
+}
+
+@Composable
+private fun BibliotecaStatsCardUI(stats: StatsBiblioteca) {
+    val total = stats.llegits + stats.enCurs + stats.perLlegir
+    val progress = if (total == 0) 0f else (stats.llegits.toFloat() / total.toFloat())
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Filled.MenuBook,
+                    contentDescription = "Biblioteca"
+                )
+                Spacer(Modifier.size(8.dp))
+                Text(
+                    text = "Biblioteca",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Text(
+                text = if (total == 0) "Encara no tens llibres a la biblioteca."
+                else "Progrés: ${stats.llegits} / $total llegits",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(10.dp)
+                    .clip(RoundedCornerShape(50))
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                StatChip("Llegits", stats.llegits)
+                StatChip("En curs", stats.enCurs)
+                StatChip("Per llegir", stats.perLlegir)
+            }
+        }
+    }
+}
+
+
+@Composable
 private fun PreferenceRow(
     icon: @Composable () -> Unit,
     title: String,
@@ -584,73 +680,6 @@ private fun PerfilContentPreview() {
             onLogout = {},
             onDeleteAccount = {}
         )
-    }
-}
-
-@Composable
-private fun BibliotecaStatsCard() {
-    val context = LocalContext.current
-
-    // 1) Sessió -> quin usuari està actiu
-    val sessioStore = remember { SessioStore(context) }
-    val sessio by sessioStore.sessioFlow.collectAsState(initial = Sessio())
-
-    // 2) Si no hi ha sessió, no té sentit mostrar stats
-    val idUsuari = sessio.idUsuariActual
-    if (idUsuari == null) return
-
-    // 3) Room -> stats en temps real
-    val db = remember { AppDatabase.getInstance(context) }
-    val statsNullable by db.entradaBibliotecaDao().observarStats(idUsuari)
-        .collectAsState(initial = null)
-
-    val stats = statsNullable ?: StatsBiblioteca(llegits = 0, enCurs = 0, perLlegir = 0)
-
-    val total = stats.total
-    val progress = if (total == 0) 0f else (stats.llegits.toFloat() / total.toFloat())
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Filled.MenuBook,
-                    contentDescription = "Biblioteca",
-                )
-                Spacer(Modifier.size(8.dp))
-                Text(
-                    text = "Biblioteca",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            Text(
-                text = if (total == 0) "Encara no tens llibres a la biblioteca."
-                else "Progrés de lectura: ${stats.llegits} / $total llegits",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                StatChip("Llegits", stats.llegits)
-                StatChip("En curs", stats.enCurs)
-                StatChip("Per llegir", stats.perLlegir)
-            }
-        }
     }
 }
 
