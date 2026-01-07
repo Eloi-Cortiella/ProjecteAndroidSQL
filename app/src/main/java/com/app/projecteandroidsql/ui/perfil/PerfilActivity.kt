@@ -459,21 +459,13 @@ private fun BibliotecaStatsCard() {
     val context = LocalContext.current
     val isPreview = LocalInspectionMode.current
 
-//    // Preview: dades fake
-//    if (isPreview) {
-//        BibliotecaStatsCardUI(
-//            stats = StatsBiblioteca(llegits = 7, enCurs = 2, perLlegir = 11)
-//        )
-//        return
-//    }
-
-    // 1) Sessió -> quin usuari està actiu
+    // Sessió -> quin usuari està actiu
     val sessioStore = remember { SessioStore(context) }
     val sessio by sessioStore.sessioFlow.collectAsState(initial = Sessio())
 
     val idUsuari = sessio.idUsuariActual ?: return
 
-    // 2) Room -> stats en temps real
+    // Room -> stats en temps real
     val db = remember { AppDatabase.getInstance(context) }
 
     val statsFlow = remember(idUsuari) {

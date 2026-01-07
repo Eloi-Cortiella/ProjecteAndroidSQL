@@ -54,4 +54,7 @@ interface EntradaBibliotecaDao {
 
     @Query("UPDATE entrada_biblioteca SET estat_lectura = :nouEstat WHERE id = :idEntrada")
     suspend fun actualitzarEstatLectura(idEntrada: Long, nouEstat: String)
+
+    @Query("DELETE FROM entrada_biblioteca WHERE id = :idEntrada")
+    suspend fun eliminarEntradaPerId(idEntrada: Long): Int
 }

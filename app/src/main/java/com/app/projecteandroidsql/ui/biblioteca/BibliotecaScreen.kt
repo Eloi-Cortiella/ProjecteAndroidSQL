@@ -19,6 +19,8 @@ import com.app.projecteandroidsql.data.room.model.EstatLectura
 import com.app.projecteandroidsql.data.session.Sessio
 import com.app.projecteandroidsql.data.session.SessioStore
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +36,7 @@ fun BibliotecaScreen() {
 
     var query by remember { mutableStateOf("") }
     var filtre by remember { mutableStateOf(FiltreEstat.TOTS) }
+    var idEntradaAEliminar by remember { mutableStateOf<Long?>(null) }
 
     val db = remember { AppDatabase.getInstance(context) }
 
@@ -68,6 +71,27 @@ fun BibliotecaScreen() {
     Scaffold(
         topBar = { TopAppBar(title = { Text("Biblioteca") }) }
     ) { padding ->
+        if (idEntradaAEliminar != null) {
+            AlertDialog(
+                onDismissRequest = { idEntradaAEliminar = null },
+                title = { Text("Eliminar de la biblioteca") },
+                text = { Text("Vols eliminar aquest llibre de la teua biblioteca?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val id = idEntradaAEliminar ?: return@TextButton
+                            idEntradaAEliminar = null
+                            scope.launch {
+                                db.entradaBibliotecaDao().eliminarEntradaPerId(id)
+                            }
+                        }
+                    ) { Text("Eliminar") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { idEntradaAEliminar = null }) { Text("Cancel·lar") }
+                }
+            )
+        }
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -129,6 +153,9 @@ fun BibliotecaScreen() {
                                     db.entradaBibliotecaDao()
                                         .actualitzarEstatLectura(item.idEntrada, nou.name)
                                 }
+                            },
+                            onEliminar = {
+                                idEntradaAEliminar = item.idEntrada
                             }
                         )
                     }
@@ -141,13 +168,12 @@ fun BibliotecaScreen() {
 @Composable
 private fun LlibreCard(
     item: LlibreBibliotecaItem,
-    onCanviarEstat: (EstatLectura) -> Unit
+    onCanviarEstat: (EstatLectura) -> Unit,
+    onEliminar: () -> Unit
 ) {
     var menu by remember { mutableStateOf(false) }
 
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -170,25 +196,39 @@ private fun LlibreCard(
             }
 
             Box {
-                TextButton(onClick = { menu = true }) { Text("Canviar") }
+                TextButton(onClick = { menu = true }) { Text("Canviar estat") }
+
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     DropdownMenuItem(
                         text = { Text("Per llegir") },
-                        onClick = { menu = false; onCanviarEstat(EstatLectura.PER_LLEGIR) }
+                        onClick = {
+                            menu = false
+                            onCanviarEstat(EstatLectura.PER_LLEGIR)
+                        }
                     )
                     DropdownMenuItem(
                         text = { Text("En curs") },
-                        onClick = { menu = false; onCanviarEstat(EstatLectura.EN_CURS) }
+                        onClick = {
+                            menu = false
+                            onCanviarEstat(EstatLectura.EN_CURS)
+                        }
                     )
                     DropdownMenuItem(
                         text = { Text("Llegit") },
-                        onClick = { menu = false; onCanviarEstat(EstatLectura.LLEGIT) }
+                        onClick = {
+                            menu = false
+                            onCanviarEstat(EstatLectura.LLEGIT)
+                        }
                     )
                 }
+            }
+            TextButton(onClick = onEliminar) {
+                Text("Eliminar")
             }
         }
     }
 }
+
 
 //@Composable
 //private fun EstatBadge(estat: EstatLectura) {

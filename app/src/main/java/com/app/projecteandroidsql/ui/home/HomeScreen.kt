@@ -10,13 +10,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-//import androidx.compose.ui.text.input.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.app.projecteandroidsql.data.room.AppDatabase
 import com.app.projecteandroidsql.data.room.entity.LlibreEntity
-import com.app.projecteandroidsql.data.room.entity.EntradaBibliotecaEntity
-import com.app.projecteandroidsql.data.room.model.EstatLectura
 import com.app.projecteandroidsql.data.room.repository.BibliotecaRepository
 import com.app.projecteandroidsql.data.session.Sessio
 import com.app.projecteandroidsql.data.session.SessioStore
